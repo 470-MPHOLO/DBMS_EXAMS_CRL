@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBMS Revision Quiz :: Units 5-13</title>
+<style>
+  :root{
+    --bg: #0e1116;
+    --panel: #151a21;
+    --line: #262e39;
+    --blue: #6fb1ff;
+    --gold: #f2c14e;
+    --text: #e4e9f1;
+    --text-dim: #8b96a8;
+    --green: #6ee7a8;
+    --red: #ff6b6b;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, Menlo, monospace;
+    --serif: "Georgia", "Iowan Old Style", serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    background-image: radial-gradient(circle at 15% 0%, rgba(111,177,255,0.07), transparent 45%),
+                       radial-gradient(circle at 90% 100%, rgba(242,193,78,0.05), transparent 40%);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    padding: 26px 14px 70px;
+  }
+  .wrap{ max-width: 780px; margin: 0 auto; }
+  .panel{
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 26px 24px 28px;
+  }
+  .eyebrow{ color: var(--blue); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px;}
+  h1{ font-family: var(--serif); font-size: 24px; margin: 0 0 4px; color: var(--text); font-weight: 700; }
+  .sub{ color: var(--text-dim); font-size: 13px; line-height: 1.6; margin: 0 0 22px; }
+
+
+  #nameScreen{ }
+  #nameScreen label{ display:block; font-size: 12px; color: var(--text-dim); margin-bottom: 8px; letter-spacing:.04em; text-transform:uppercase;}
+  #nameInput{
+    width: 100%; padding: 12px 14px; font-family: var(--mono); font-size: 15px;
+    background: #0b0e13; border: 1px solid var(--line); border-radius: 6px; color: var(--text);
+    margin-bottom: 16px;
+  }
+  #nameInput:focus{ outline: none; border-color: var(--blue); }
+  #startBtn{
+    font-family: var(--mono); font-size: 14px; background: var(--blue); color: #0b0e13; border: none;
+    padding: 12px 22px; border-radius: 6px; cursor: pointer; font-weight: 700; letter-spacing: .03em;
+  }
+  #startBtn:hover{ opacity: .9; }
+  #nameError{ color: var(--red); font-size: 12px; margin-top: -8px; margin-bottom: 12px; display:none;}
+
+  
+  #quizScreen{ display:none; }
+  .stats-row{
+    display:flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-dim);
+    border-top: 1px dashed var(--line); border-bottom: 1px dashed var(--line);
+    padding: 10px 0; margin-bottom: 20px;
+  }
+  .stats-row b{ color: var(--gold); }
+  .progress-track{ height: 3px; background: var(--line); border-radius: 2px; margin-bottom: 20px; overflow:hidden;}
+  .progress-fill{ height: 100%; background: var(--blue); width: 0%; transition: width .25s; }
+
+  .qmeta{ display:flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .07em; }
+  .qmeta .type{ color: var(--gold); }
+  .qtext{ font-size: 15.5px; line-height: 1.65; margin: 0 0 16px; white-space: pre-wrap; }
+  .qtext .code{
+    display:block; margin-top: 10px; padding: 10px 12px; background: #0b0e13;
+    border: 1px solid var(--line); border-left: 3px solid var(--blue); color: var(--green);
+    font-size: 13px; overflow-x: auto; white-space: pre;
+  }
+  .options{ display:flex; flex-direction:column; gap: 8px; margin-bottom: 18px; }
+  .opt{
+    display:flex; align-items:flex-start; gap: 10px; padding: 10px 12px;
+    border: 1px solid var(--line); background: #10141b; border-radius: 6px; cursor: pointer;
+    font-size: 14px; transition: border-color .12s, background .12s;
+  }
+  .opt:hover{ border-color: var(--blue); }
+  .opt .tag{ color: var(--text-dim); flex-shrink:0; width: 18px; }
+  .opt.selected{ border-color: var(--gold); background: #1c1710; }
+  .opt.correct{ border-color: var(--green); background: #0f1e15; color: var(--green); }
+  .opt.incorrect{ border-color: var(--red); background: #1e0f0f; color: var(--red); }
+  .opt.disabled{ cursor:default; }
+
+  .feedback{ display:none; font-size: 13px; line-height: 1.6; padding: 10px 12px; border-left: 3px solid var(--blue); background: #0b0e13; color: var(--text-dim); margin-bottom: 18px; }
+  .feedback.show{ display:block; }
+  .feedback b{ color: var(--text); }
+
+  .nav-row{ display:flex; justify-content: space-between; align-items:center; gap: 10px; }
+  button.nav{
+    font-family: var(--mono); font-size: 13px; background: transparent; color: var(--blue);
+    border: 1px solid #2a3a52; padding: 9px 16px; border-radius: 6px; cursor: pointer;
+  }
+  button.nav:hover:not(:disabled){ background: rgba(111,177,255,0.08); }
+  button.nav:disabled{ opacity: .3; cursor: not-allowed; }
+  button.primary{ border-color: var(--gold); color: var(--gold); font-weight: 700; }
+  button.primary:hover:not(:disabled){ background: rgba(242,193,78,0.08); }
+
+  
+  #resultsScreen{ display:none; }
+  .congrats{ font-family: var(--serif); font-size: 22px; color: var(--gold); margin: 4px 0 6px; line-height: 1.4;}
+  .score-big{ font-size: 40px; color: var(--blue); margin: 6px 0 2px; }
+  .score-label{ color: var(--text-dim); font-size: 13px; margin-bottom: 20px; }
+  .breakdown{ display:flex; gap: 20px; font-size: 12px; color: var(--text-dim); margin-bottom: 20px; flex-wrap: wrap;}
+  .breakdown b{ color: var(--text); }
+  .review-item{ border-top: 1px dashed var(--line); padding: 12px 0; font-size: 13px; line-height: 1.6; }
+  .review-item .q{ margin-bottom: 6px; }
+  .review-item .yourans{ color: var(--red); }
+  .review-item .correctans{ color: var(--green); }
+  .review-item.ok .yourans{ color: var(--green); }
+  .restart-row{ margin-top: 20px; }
+  ::selection{ background: #2a3a52; }
+  @media (max-width:480px){ .panel{ padding: 18px; } h1{ font-size: 19px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel">
+
+    <div id="nameScreen">
+      <div class="eyebrow">DBMS &middot; Units 5&ndash;13</div>
+      <h1>Database Management Systems<br>Revision Quiz</h1>
+      <p class="sub">50 questions covering everything from basic DBMS concepts through the E-R model, relational design, keys and constraints, normalization, SQL/DML, storage &amp; query processing, and transaction management. 15 theory + 35 scenario/practical. Instant feedback after every answer.</p>
+      <label for="nameInput">Enter your name to begin</label>
+      <input type="text" id="nameInput" placeholder="e.g. Thabo Mokoena" autocomplete="off">
+      <div id="nameError">Please enter your name to start the quiz.</div>
+      <br>
+      <button id="startBtn">Begin Quiz &rarr;</button>
+    </div>
+
+    <div id="quizScreen">
+      <div class="eyebrow" id="quizEyebrow">DBMS Revision Quiz</div>
+      <div class="stats-row">
+        <div>Question <b><span id="statCurrent">1</span></b>/<span id="statTotal">50</span></div>
+        <div>Correct so far: <b><span id="statCorrect">0</span></b></div>
+        <div>Score: <b><span id="statPct">0%</span></b></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div id="quizArea"></div>
+    </div>
+
+    <div id="resultsScreen">
+      <div class="eyebrow">Result</div>
+      <div class="congrats" id="congratsMsg">Congratulations!</div>
+      <div class="score-big" id="finalScore">0/50</div>
+      <div class="score-label" id="finalLabel">&mdash;</div>
+      <div class="breakdown" id="breakdownRow"></div>
+      <div id="reviewList"></div>
+      <div class="restart-row">
+        <button class="nav primary" id="restartBtn">Restart Quiz</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+
+{type:"Theory", topic:"Basic Concepts", text:"What best describes a Database Management System (DBMS)?", code:null,
+ options:["A single large spreadsheet file","Software that enables users to define, create, maintain, and control access to a database","A programming language used only for web development","A type of computer hardware for storing files"],
+ correct:1, explain:"A DBMS is software that lets users define, build, manipulate, and share databases among various users and applications, while controlling access and maintaining integrity."},
+
+{type:"Theory", topic:"Basic Concepts", text:"What is metadata in the context of a database?", code:null,
+ options:["The actual data stored in tables","Data about data — such as table structures, constraints, and relationships","A backup copy of the database","A user's login credentials"],
+ correct:1, explain:"Metadata describes the structure and constraints of the database itself (schema information), not the data values stored within it."},
+
+{type:"Theory", topic:"File Systems vs DBMS", text:"Which of the following is a key disadvantage of traditional file-processing systems compared to a DBMS?", code:null,
+ options:["Data redundancy and inconsistency across multiple files","Faster data retrieval than DBMS","Built-in support for concurrent transactions","Centralized data integrity control"],
+ correct:0, explain:"Traditional file systems store data in separate files per application, leading to duplicated data and inconsistency, which a DBMS solves through centralised, shared storage."},
+
+{type:"Theory", topic:"File Systems vs DBMS", text:"What does 'program-data independence' in a DBMS refer to?", code:null,
+ options:["Programs and data must always be stored on the same disk","Changes to the data storage structure do not require changes to application programs","Data cannot be accessed without a program","Every program must have its own private copy of the data"],
+ correct:1, explain:"Program-data independence means the internal storage structure of data can change without forcing changes to the application programs that use it — a core benefit of the DBMS approach."},
+
+{type:"Theory", topic:"Components of DB Systems", text:"Which of these is NOT typically considered a core component of a database system?", code:null,
+ options:["Hardware","Software (the DBMS)","Data","A web browser extension"],
+ correct:3, explain:"The core components of a database system are hardware, software, data, procedures, database access language, and users (including the DBA). A browser extension is not one of them."},
+
+{type:"Theory", topic:"Three-Tier Architecture", text:"In the ANSI-SPARC three-schema architecture, which level defines how individual user groups view the data?", code:null,
+ options:["Internal (physical) level","Conceptual level","External (view) level","Storage level"],
+ correct:2, explain:"The external level defines multiple user views, each tailored to a specific group of users, hiding the parts of the database not relevant to them."},
+
+{type:"Theory", topic:"Data Models", text:"What is a data model in database design?", code:null,
+ options:["A physical printout of table contents","A conceptual set of tools/concepts for describing data, relationships, and constraints","A type of database backup","A SQL query optimizer"],
+ correct:1, explain:"A data model provides the concepts and notations to describe the structure of data, the relationships among data items, and constraints that apply to the data."},
+
+{type:"Theory", topic:"E-R Model", text:"In the Entity-Relationship (E-R) model, what does an 'entity' represent?", code:null,
+ options:["A distinguishable real-world object or concept about which data is stored","A SQL command","A physical disk sector","A type of database index"],
+ correct:0, explain:"An entity is a real-world object or concept (e.g. STUDENT, COURSE) that can be distinctly identified and about which the database stores information."},
+
+{type:"Theory", topic:"E-R Model", text:"Which term describes the number of instances of one entity that can be associated with instances of another entity in a relationship?", code:null,
+ options:["Cardinality","Normalization","Denormalization","Indexing"],
+ correct:0, explain:"Cardinality (e.g. one-to-one, one-to-many, many-to-many) describes how many instances of one entity relate to instances of another in a relationship."},
+
+{type:"Theory", topic:"Relational Model", text:"In the relational model, what do a 'relation', 'tuple', and 'attribute' correspond to, respectively?", code:null,
+ options:["Table, column, row","Table, row, column","Row, table, column","Column, row, table"],
+ correct:1, explain:"A relation corresponds to a table, a tuple corresponds to a row (record), and an attribute corresponds to a column (field)."},
+
+{type:"Theory", topic:"Keys", text:"What is a candidate key?", code:null,
+ options:["Any attribute that could uniquely identify a tuple in a relation, and is a minimal such set","A key that has been deleted from the table","A key used only for foreign key relationships","Any attribute with numeric data type"],
+ correct:0, explain:"A candidate key is a minimal set of attributes that can uniquely identify each tuple in a relation. One candidate key is chosen as the primary key; the rest become alternate keys."},
+
+{type:"Theory", topic:"Keys", text:"What is the primary purpose of a foreign key?", code:null,
+ options:["To speed up sorting operations","To establish and enforce a link between the data in two relations (referential integrity)","To encrypt sensitive data","To automatically generate primary keys"],
+ correct:1, explain:"A foreign key is an attribute (or set of attributes) in one relation that references the primary key of another relation, enforcing referential integrity between them."},
+
+{type:"Theory", topic:"Integrity Constraints", text:"Which type of integrity constraint ensures that a foreign key value must either match an existing primary key value in the referenced table or be null?", code:null,
+ options:["Domain integrity","Entity integrity","Referential integrity","Key integrity"],
+ correct:2, explain:"Referential integrity ensures foreign key values correspond to existing primary key values in the referenced relation (or are null), preventing 'orphan' records."},
+
+{type:"Theory", topic:"Anomalies", text:"Which of the following is an example of an update anomaly in a poorly designed (unnormalized) relation?", code:null,
+ options:["Deleting a single tuple accidentally removes data about an unrelated entity","Changing an instructor's office number requires updating it in multiple rows, and missing one causes inconsistency","Inserting a new row automatically triggers a backup","A query returns results faster than expected"],
+ correct:1, explain:"An update anomaly occurs when a data value is duplicated across multiple rows, so updating it in only some rows (and missing others) leaves the data inconsistent."},
+
+{type:"Theory", topic:"Normalization Goals", text:"What is the primary goal of normalization, and how does denormalization relate to it?", code:null,
+ options:["Normalization increases redundancy; denormalization removes it","Normalization reduces redundancy and anomalies by decomposing relations; denormalization intentionally reintroduces some redundancy to improve read performance","Both normalization and denormalization always improve query speed equally","Normalization is only used for indexing, not table design"],
+ correct:1, explain:"Normalization decomposes relations to minimize redundancy and eliminate anomalies. Denormalization is a deliberate trade-off, reintroducing controlled redundancy to reduce joins and speed up reads."},
+
+{type:"Practical", topic:"Keys", text:"Consider STUDENT(StudentID, Email, NationalID, Name, Course). StudentID, Email, and NationalID can each uniquely identify a student. Which term describes StudentID, Email, and NationalID collectively?", code:null,
+ options:["Foreign keys","Candidate keys","Composite keys only","Domain constraints"],
+ correct:1, explain:"Since each of StudentID, Email, and NationalID can independently and minimally identify a tuple, they are all candidate keys. One is chosen as the primary key; the others become alternate keys."},
+
+{type:"Practical", topic:"ER to Relations", text:"An E-R diagram shows a 1:1 relationship between EMPLOYEE and PARKING_SPOT (each employee has at most one spot). What is the standard way to map this to relations?", code:null,
+ options:["Always create a separate third table to hold the relationship","Place the foreign key on either side (commonly the more frequently accessed side), referencing the other's primary key","Merge both entities into a single table with no keys","Ignore the relationship since it's optional"],
+ correct:1, explain:"For 1:1 relationships, you typically place a foreign key on one side referencing the primary key of the other, avoiding an unnecessary extra table."},
+
+{type:"Practical", topic:"ER to Relations", text:"An E-R diagram shows a many-to-many (M:N) relationship between STUDENT and COURSE (via ENROLLS_IN, which also records a Grade). How should this be mapped to relations?", code:null,
+ options:["Add a foreign key for COURSE directly into the STUDENT table","Add a foreign key for STUDENT directly into the COURSE table","Create a separate associative (junction) table with foreign keys to both STUDENT and COURSE, plus the Grade attribute","Merge STUDENT and COURSE into one table"],
+ correct:2, explain:"M:N relationships require a separate junction/associative table containing foreign keys to both related entities, and any attributes of the relationship itself (like Grade)."},
+
+{type:"Practical", topic:"ER to Relations", text:"A weak entity DEPENDENT (identified by Name) exists only in relation to a strong entity EMPLOYEE (via EmployeeID). When mapping to a relation, what must the DEPENDENT table's primary key include?", code:null,
+ options:["Only DEPENDENT's own Name attribute","A composite key combining the strong entity's key (EmployeeID) with the weak entity's partial key (Name)","No primary key is needed for weak entities","Only an auto-generated surrogate key, never the owner's key"],
+ correct:1, explain:"A weak entity has no full primary key of its own; its primary key in the relation is a composite of the owning strong entity's key and its own partial key."},
+
+{type:"Practical", topic:"Attributes", text:"An entity PERSON has an attribute 'Address' that itself breaks down into Street, City, and PostalCode. What type of attribute is 'Address'?", code:null,
+ options:["Derived attribute","Composite attribute","Multivalued attribute","Key attribute"],
+ correct:1, explain:"A composite attribute can be divided into smaller sub-parts (e.g. Address into Street, City, PostalCode), each of which is itself meaningful."},
+
+{type:"Practical", topic:"Attributes", text:"An entity STUDENT has an attribute 'PhoneNumbers' where a student may have more than one phone number. What type of attribute is this?", code:null,
+ options:["Multivalued attribute","Simple attribute","Derived attribute","Foreign attribute"],
+ correct:0, explain:"A multivalued attribute can hold more than one value for a single entity instance, such as multiple phone numbers for one student."},
+
+{type:"Practical", topic:"Attributes", text:"An entity EMPLOYEE stores 'DateOfBirth' but also displays 'Age', which is calculated from DateOfBirth whenever needed. What type of attribute is 'Age'?", code:null,
+ options:["Composite attribute","Multivalued attribute","Derived attribute","Candidate key"],
+ correct:2, explain:"A derived attribute's value is calculated from another attribute (or attributes) rather than stored directly, e.g. Age derived from DateOfBirth."},
+
+{type:"Practical", topic:"1NF", text:"A table ORDER has a column 'Products' storing multiple comma-separated product names in a single cell for one order (e.g. 'Pen, Notebook, Eraser'). Which normal form violation is this?", code:null,
+ options:["Violates 1NF due to a repeating group / non-atomic value","Violates 2NF due to partial dependency","Violates 3NF due to transitive dependency","No violation, this is properly normalized"],
+ correct:0, explain:"1NF requires that every attribute hold a single, atomic value. Storing multiple products in one field creates a repeating group, violating 1NF."},
+
+{type:"Practical", topic:"2NF", text:"Relation ORDER_ITEM(OrderID, ProductID, ProductName, Quantity) has a composite primary key (OrderID, ProductID). ProductName depends only on ProductID, not on the full composite key. What normal form violation is this?", code:null,
+ options:["Violates 1NF","Violates 2NF due to a partial dependency","Violates 3NF due to a transitive dependency","No violation"],
+ correct:1, explain:"2NF requires that non-key attributes depend on the ENTIRE composite primary key. Since ProductName depends only on part of the key (ProductID), this is a partial dependency, violating 2NF."},
+
+{type:"Practical", topic:"3NF", text:"Relation EMPLOYEE(EmpID, DeptID, DeptName) has EmpID as the primary key. DeptName depends on DeptID, and DeptID depends on EmpID. What type of dependency does this illustrate, and which NF is violated?", code:null,
+ options:["Partial dependency, violates 2NF","Transitive dependency (EmpID → DeptID → DeptName), violates 3NF","Multivalued dependency, violates 4NF","No dependency issue exists"],
+ correct:1, explain:"DeptName depends on DeptID, which itself depends on EmpID (the primary key) — a non-key attribute depending on another non-key attribute is a transitive dependency, violating 3NF."},
+
+{type:"Practical", topic:"Normalization", text:"To resolve the transitive dependency EmpID → DeptID → DeptName in EMPLOYEE(EmpID, DeptID, DeptName), what is the correct 3NF decomposition?", code:null,
+ options:["Delete the DeptName column entirely with no replacement","Split into EMPLOYEE(EmpID, DeptID) and DEPARTMENT(DeptID, DeptName)","Merge EmpID and DeptID into a single composite attribute","Duplicate DeptName into every table in the database"],
+ correct:1, explain:"Removing the transitively dependent attribute into its own relation (keyed by the attribute it truly depends on) resolves the transitive dependency and achieves 3NF."},
+
+{type:"Practical", topic:"Functional Dependencies", text:"Given relation R(A, B, C, D) with functional dependencies A → B, A → C, A → D, and no other dependencies, what is the candidate key of R?", code:null,
+ options:["B","A","C, D","A, B, C, D together, with no single determinant"],
+ correct:1, explain:"Since A alone functionally determines every other attribute (B, C, D), A is the candidate key of R."},
+
+{type:"Practical", topic:"SQL DDL", text:"Which SQL statement correctly creates a table with a primary key?", code:null,
+ options:["CREATE TABLE Student (ID INT, Name VARCHAR(50), PRIMARY KEY (ID));","MAKE TABLE Student (ID INT PRIMARY, Name VARCHAR(50));","NEW TABLE Student SET PRIMARY(ID);","CREATE Student TABLE (ID INT KEY, Name TEXT);"],
+ correct:0, explain:"CREATE TABLE followed by column definitions and a PRIMARY KEY constraint (inline or as a separate clause) is the correct standard SQL syntax."},
+
+{type:"Practical", topic:"SQL DDL", text:"Which SQL snippet correctly adds a foreign key constraint referencing another table's primary key?", code:"CREATE TABLE Enrollment (\n  StudentID INT,\n  CourseID INT,\n  ?\n);",
+ options:["FOREIGN KEY (StudentID) REFERENCES Student(ID)","LINK StudentID TO Student(ID)","FOREIGN StudentID KEY Student(ID)","REFERENCE KEY StudentID = Student.ID"],
+ correct:0, explain:"The correct SQL syntax is FOREIGN KEY (column) REFERENCES ReferencedTable(column), establishing referential integrity."},
+
+{type:"Practical", topic:"SQL DML - SELECT", text:"Which query correctly retrieves all students enrolled in 'Databases' from a STUDENT table joined implicitly via a WHERE-based filter on CourseName?", code:null,
+ options:["SELECT * FROM Student WHERE CourseName = 'Databases';","GET Student WHERE CourseName IS Databases;","SELECT * FROM Student HAVING CourseName = 'Databases';","FIND Student CourseName = 'Databases';"],
+ correct:0, explain:"SELECT ... FROM ... WHERE is the correct DML syntax for filtering rows based on a condition; HAVING is used with GROUP BY, not simple row filtering."},
+
+{type:"Practical", topic:"SQL DML - INSERT", text:"Which statement correctly inserts a new row into Student(ID, Name, Course)?", code:null,
+ options:["INSERT INTO Student (ID, Name, Course) VALUES (101, 'Amara', 'DBMS');","INSERT Student SET ID=101, Name='Amara', Course='DBMS';","ADD ROW Student (101, 'Amara', 'DBMS');","INSERT Student VALUES INTO (101, 'Amara', 'DBMS');"],
+ correct:0, explain:"INSERT INTO table (columns) VALUES (values) is the standard SQL syntax for adding a new row."},
+
+{type:"Practical", topic:"SQL DML - UPDATE", text:"Which statement correctly changes the Course value to 'Networks' for the student with ID 101?", code:null,
+ options:["UPDATE Student SET Course = 'Networks' WHERE ID = 101;","CHANGE Student Course TO 'Networks' WHERE ID=101;","UPDATE Student Course='Networks' IF ID=101;","MODIFY Student SET Course='Networks';"],
+ correct:0, explain:"UPDATE table SET column = value WHERE condition is the correct SQL syntax; omitting WHERE would update every row."},
+
+{type:"Practical", topic:"SQL DML - DELETE", text:"Which statement correctly deletes only the student with ID 101 from the Student table?", code:null,
+ options:["DELETE FROM Student WHERE ID = 101;","DELETE Student ID=101;","REMOVE ROW FROM Student WHERE ID=101;","DROP Student WHERE ID=101;"],
+ correct:0, explain:"DELETE FROM table WHERE condition removes matching rows. DROP would delete the entire table structure, not just a row."},
+
+{type:"Practical", topic:"SQL DML", text:"Which clause ensures duplicate rows are excluded from a SELECT query's result set?", code:"SELECT ? Course FROM Student;", 
+ options:["UNIQUE","DISTINCT","ONLY","NODUP"],
+ correct:1, explain:"SELECT DISTINCT removes duplicate rows from the result set, returning only unique values for the specified column(s)."},
+
+{type:"Practical", topic:"SQL DML", text:"Which clause is used to sort query results by StudentName in descending order?", code:null,
+ options:["SORT BY StudentName DESC;","ORDER BY StudentName DESC;","ARRANGE StudentName DESC;","GROUP BY StudentName DESC;"],
+ correct:1, explain:"ORDER BY column [ASC|DESC] sorts the result set. DESC specifies descending order (Z-A / highest-lowest)."},
+
+{type:"Practical", topic:"SQL Aggregate", text:"Which query correctly counts the number of students in each course?", code:null,
+ options:["SELECT Course, COUNT(*) FROM Student GROUP BY Course;","SELECT Course, COUNT(*) FROM Student ORDER BY Course;","SELECT COUNT(Course) FROM Student WHERE Course;","SELECT Course, TOTAL(*) FROM Student GROUP Course;"],
+ correct:0, explain:"GROUP BY groups rows sharing the same Course value, and COUNT(*) tallies rows within each group — the standard pattern for per-category counts."},
+
+{type:"Practical", topic:"SQL Aggregate", text:"You want to list only courses with more than 30 enrolled students, using a GROUP BY on Course with COUNT(*). Which clause filters on the aggregated COUNT result?", code:"SELECT Course, COUNT(*) FROM Enrollment\nGROUP BY Course\n? COUNT(*) > 30;",
+ options:["WHERE","HAVING","FILTER","AFTER"],
+ correct:1, explain:"WHERE filters rows before grouping/aggregation; HAVING filters groups after aggregation, so it's required to filter on an aggregate like COUNT(*)."},
+
+{type:"Practical", topic:"SQL Joins", text:"Which type of join returns only rows that have matching values in both joined tables?", code:null,
+ options:["LEFT JOIN","RIGHT JOIN","INNER JOIN","FULL OUTER JOIN"],
+ correct:2, explain:"INNER JOIN returns only the rows where the join condition is satisfied in both tables; unmatched rows from either side are excluded."},
+
+{type:"Practical", topic:"SQL Joins", text:"You need all students, including those NOT enrolled in any course, alongside any matching enrollment data. Which join achieves this (assuming Student is the left/first table)?", code:null,
+ options:["INNER JOIN","LEFT JOIN","CROSS JOIN only","Self join only"],
+ correct:1, explain:"LEFT JOIN returns all rows from the left table (Student) plus matching rows from the right table, filling unmatched right-side columns with NULL."},
+
+{type:"Practical", topic:"File Organization", text:"A table's rows are stored in the order they were inserted, with no particular sorting, requiring a full scan for most searches. What file organization is this?", code:null,
+ options:["Sorted (sequential) file organization","Heap (unordered) file organization","Hash file organization","B-tree indexed organization"],
+ correct:1, explain:"A heap file stores records in insertion order with no defined ordering, making insertion fast but search/scan slow (typically requiring a full table scan)."},
+
+{type:"Practical", topic:"File Organization", text:"A table's records are physically stored in ascending order of the StudentID column, allowing binary search but making insertions costlier (may require shifting records). What organization is this?", code:null,
+ options:["Heap file organization","Sorted (sequential) file organization","Hash file organization","Clustered heap"],
+ correct:1, explain:"Sorted file organization keeps records physically ordered by a key, enabling faster searches (e.g. binary search) at the cost of more expensive insertions/deletions."},
+
+{type:"Practical", topic:"File Organization", text:"A file organization applies a function to a key value to compute the exact storage location (bucket) of a record, giving very fast direct lookups for equality searches. What is this called?", code:null,
+ options:["Sorted file organization","Heap file organization","Hash file organization","Sequential file organization"],
+ correct:2, explain:"Hash file organization uses a hash function on the key to compute the storage address directly, giving near-constant-time lookups for exact-match queries."},
+
+{type:"Practical", topic:"Indexing", text:"An index is built on the same attribute that determines the physical (sorted) order of records in the file. What type of index is this?", code:null,
+ options:["Secondary index","Primary index","Multi-level index only","Hash index only"],
+ correct:1, explain:"A primary index is built on the ordering key of a sequentially ordered file — the physical record order matches the index order."},
+
+{type:"Practical", topic:"Indexing", text:"An index is created on a non-ordering attribute (e.g. LastName) of a table that is physically sorted by a different key (e.g. StudentID). What type of index is this?", code:null,
+ options:["Primary index","Secondary index","Clustering index by default","No index is possible in this case"],
+ correct:1, explain:"A secondary index is built on a non-ordering field, providing fast lookup on attributes other than the one determining physical storage order."},
+
+{type:"Practical", topic:"Query Processing", text:"Which of the following best describes the general order of steps a DBMS follows when processing a SQL query?", code:null,
+ options:["Execution → Optimization → Parsing → Translation","Parsing/Translation → Optimization → Execution","Optimization → Execution → Parsing","Execution only, with no parsing or optimization"],
+ correct:1, explain:"A query is first parsed and translated into an internal representation, then an execution plan is optimized (choosing efficient access paths), and finally that plan is executed."},
+
+{type:"Practical", topic:"Transactions - ACID", text:"A bank transfer moves $500 from Account A to Account B. Midway through, the system crashes after debiting A but before crediting B. Which ACID property, if enforced, prevents this partial transaction from being permanently applied?", code:null,
+ options:["Atomicity — the transaction is rolled back entirely, as if it never happened","Isolation — other transactions cannot see the partial change","Durability — the change is saved to disk permanently","Consistency — only valid data states are allowed, but this doesn't guarantee full rollback"],
+ correct:0, explain:"Atomicity guarantees a transaction is all-or-nothing: if it fails partway, the DBMS rolls back the partial changes so the transaction has no effect at all."},
+
+{type:"Practical", topic:"Transactions - ACID", text:"Two concurrent transactions must not see each other's uncommitted, in-progress changes. Which ACID property governs this?", code:null,
+ options:["Atomicity","Consistency","Isolation","Durability"],
+ correct:2, explain:"Isolation ensures concurrently executing transactions do not interfere with each other, typically by preventing visibility of uncommitted changes from other transactions."},
+
+{type:"Practical", topic:"Transactions - ACID", text:"After a transaction commits, a power failure occurs immediately afterward. The committed changes must still be present when the system recovers. Which ACID property guarantees this?", code:null,
+ options:["Atomicity","Isolation","Durability","Consistency"],
+ correct:2, explain:"Durability guarantees that once a transaction commits, its changes are permanently recorded (e.g. via write-ahead logging) and survive subsequent system failures."},
+
+{type:"Practical", topic:"Concurrency Control", text:"Two transactions T1 and T2 both read the same balance value, both compute a new value based on it, and both write back — but T2's write overwrites T1's write, silently discarding T1's update. What concurrency problem is this?", code:null,
+ options:["Dirty read","Lost update","Deadlock","Phantom read"],
+ correct:1, explain:"A lost update occurs when two transactions read the same data and one transaction's write is overwritten by the other, causing the first update to be lost entirely."},
+
+{type:"Practical", topic:"Concurrency Control", text:"Transaction T2 reads a value that was written by T1 but T1 later aborts (rolls back). T2 has now read data that never really existed in the committed database. What is this problem called?", code:null,
+ options:["Dirty read","Lost update","Serializable read","Durable read"],
+ correct:0, explain:"A dirty read happens when a transaction reads uncommitted data from another transaction that later rolls back, leaving the reader with invalid/nonexistent data."},
+
+{type:"Practical", topic:"Schedules", text:"A schedule in which the operations of different transactions are NOT interleaved — each transaction runs completely before the next starts — is called what?", code:null,
+ options:["Serial schedule","Serializable schedule","Concurrent schedule","Cascading schedule"],
+ correct:0, explain:"A serial schedule executes transactions one after another with no interleaving at all. (Note: 'serializable' is broader — it means an interleaved schedule that PRODUCES the same result as some serial schedule.)"},
+
+{type:"Practical", topic:"Schedules", text:"An interleaved (non-serial) schedule produces the exact same final result as if the transactions had run one after another in some serial order. What is this schedule called?", code:null,
+ options:["A non-recoverable schedule","A serializable schedule","A cascading schedule","A dirty schedule"],
+ correct:1, explain:"A serializable schedule is an interleaved schedule that is equivalent in outcome to some serial execution of the same transactions, making it considered 'correct' for concurrency purposes."},
+
+{type:"Practical", topic:"Recoverability", text:"In a schedule, T2 reads a value written by T1, and T2 commits BEFORE T1 commits. If T1 later aborts, what problem results, and what schedule property is violated?", code:null,
+ options:["No problem occurs; this is always safe","T2 has committed based on data that no longer exists once T1 aborts — this schedule is non-recoverable","This violates atomicity of T2 only, not recoverability","This is an example of a serial schedule, which is always safe"],
+ correct:1, explain:"If T2 commits before the transaction it depends on (T1) commits, and T1 later aborts, T2's committed result can no longer be undone — this makes the schedule non-recoverable, which is considered unacceptable."},
+
+{type:"Practical", topic:"Recoverability", text:"In a recoverable schedule where T2 reads data written by uncommitted T1, and T1 later aborts, what must happen to T2 to maintain consistency?", code:null,
+ options:["T2 must also be rolled back (cascading rollback)","T2 can commit normally regardless of T1's abort","Only T1 needs to be re-executed, T2 is unaffected","The database ignores the dependency entirely"],
+ correct:0, explain:"If T2 read uncommitted data from T1 and T1 aborts, T2 must also be rolled back to avoid working with invalid data — this is called a cascading rollback, which recoverable (but non-cascading-safe) schedules try to avoid by delaying reads until commit."}
+];
+
+let userName = "";
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let locked = new Array(QUESTIONS.length).fill(false);
+
+const nameScreen = document.getElementById('nameScreen');
+const quizScreen = document.getElementById('quizScreen');
+const resultsScreen = document.getElementById('resultsScreen');
+const nameInput = document.getElementById('nameInput');
+const nameError = document.getElementById('nameError');
+const quizArea = document.getElementById('quizArea');
+const statCurrent = document.getElementById('statCurrent');
+const statTotal = document.getElementById('statTotal');
+const statCorrect = document.getElementById('statCorrect');
+const statPct = document.getElementById('statPct');
+const progressFill = document.getElementById('progressFill');
+const quizEyebrow = document.getElementById('quizEyebrow');
+
+statTotal.textContent = QUESTIONS.length;
+
+document.getElementById('startBtn').addEventListener('click', startQuiz);
+nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') startQuiz(); });
+
+function startQuiz(){
+  const val = nameInput.value.trim();
+  if (!val){
+    nameError.style.display = 'block';
+    return;
+  }
+  userName = val;
+  nameError.style.display = 'none';
+  nameScreen.style.display = 'none';
+  quizScreen.style.display = 'block';
+  quizEyebrow.textContent = `DBMS Revision Quiz — ${userName}`;
+  render();
+}
+
+function render() {
+  const q = QUESTIONS[current];
+  statCurrent.textContent = current + 1;
+  const correctCount = answers.filter((a, i) => a === QUESTIONS[i].correct).length;
+  statCorrect.textContent = correctCount;
+  const answeredCount = answers.filter(a => a !== null).length;
+  statPct.textContent = answeredCount ? Math.round((correctCount / answeredCount) * 100) + '%' : '0%';
+  progressFill.style.width = ((current) / QUESTIONS.length * 100) + '%';
+
+  let html = '';
+  html += `<div class="qmeta"><span class="type">${q.type} &middot; ${q.topic}</span><span>Q${current + 1} / ${QUESTIONS.length}</span></div>`;
+  html += `<div class="qtext">${q.text}${q.code ? `<span class="code">${q.code}</span>` : ''}</div>`;
+  html += `<div class="options">`;
+  const letters = ['A', 'B', 'C', 'D'];
+  q.options.forEach((opt, i) => {
+    let cls = 'opt';
+    if (locked[current]) {
+      cls += ' disabled';
+      if (i === q.correct) cls += ' correct';
+      else if (i === answers[current]) cls += ' incorrect';
+    } else if (answers[current] === i) {
+      cls += ' selected';
+    }
+    html += `<div class="${cls}" data-idx="${i}"><span class="tag">${letters[i]}.</span><span>${opt}</span></div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="feedback${locked[current] ? ' show' : ''}"><b>${locked[current] ? (answers[current] === q.correct ? 'Correct.' : 'Not quite.') : ''}</b> ${locked[current] ? q.explain : ''}</div>`;
+
+  html += `<div class="nav-row">
+    <button class="nav" id="prevBtn" ${current === 0 ? 'disabled' : ''}>&larr; back</button>
+    <button class="nav primary" id="nextBtn" ${!locked[current] ? 'disabled' : ''}>${current === QUESTIONS.length - 1 ? 'finish quiz' : 'next \u2192'}</button>
+  </div>`;
+
+  quizArea.innerHTML = html;
+
+  document.querySelectorAll('.opt').forEach(el => {
+    el.addEventListener('click', () => {
+      if (locked[current]) return;
+      const idx = parseInt(el.getAttribute('data-idx'));
+      answers[current] = idx;
+      locked[current] = true;
+      render();
+    });
+  });
+
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) prevBtn.addEventListener('click', () => { current--; render(); });
+  if (nextBtn) nextBtn.addEventListener('click', () => {
+    if (current === QUESTIONS.length - 1) {
+      showResults();
+    } else {
+      current++;
+      render();
+    }
+  });
+}
+
+function showResults() {
+  quizScreen.style.display = 'none';
+  resultsScreen.style.display = 'block';
+
+  const correctCount = answers.filter((a, i) => a === QUESTIONS[i].correct).length;
+  const pct = Math.round((correctCount / QUESTIONS.length) * 100);
+
+  let salut;
+  if (pct >= 90) salut = `Congratulations, ${userName}! Outstanding mastery of the material.`;
+  else if (pct >= 75) salut = `Well done, ${userName}! A strong, solid result.`;
+  else if (pct >= 60) salut = `Good effort, ${userName}! A passing result with room to sharpen a few areas.`;
+  else if (pct >= 40) salut = `Keep going, ${userName} — you're building the foundation, revisit the weak spots below.`;
+  else salut = `Don't worry, ${userName} — this is a starting point. Revisit Units 5-13 and try again.`;
+
+  document.getElementById('congratsMsg').textContent = salut;
+  document.getElementById('finalScore').textContent = `${correctCount}/${QUESTIONS.length}`;
+  document.getElementById('finalLabel').textContent = `${pct}% overall`;
+
+  const theoryQs = QUESTIONS.map((q,i)=>({q,i})).filter(x=>x.q.type==='Theory');
+  const practicalQs = QUESTIONS.map((q,i)=>({q,i})).filter(x=>x.q.type==='Practical');
+  const theoryCorrect = theoryQs.filter(x=>answers[x.i]===x.q.correct).length;
+  const practicalCorrect = practicalQs.filter(x=>answers[x.i]===x.q.correct).length;
+
+  document.getElementById('breakdownRow').innerHTML =
+    `<div>Theory: <b>${theoryCorrect}/${theoryQs.length}</b></div>
+     <div>Practical: <b>${practicalCorrect}/${practicalQs.length}</b></div>`;
+
+  let reviewHtml = '';
+  QUESTIONS.forEach((q, i) => {
+    const ok = answers[i] === q.correct;
+    const letters = ['A', 'B', 'C', 'D'];
+    reviewHtml += `<div class="review-item ${ok ? 'ok' : ''}">
+      <div class="q">Q${i + 1}. [${q.type} &middot; ${q.topic}] ${q.text}</div>
+      <div class="yourans">Your answer: ${answers[i] !== null ? letters[answers[i]] + '. ' + q.options[answers[i]] : '(skipped)'}</div>
+      ${!ok ? `<div class="correctans">Correct: ${letters[q.correct]}. ${q.options[q.correct]}</div>` : ''}
+    </div>`;
+  });
+  document.getElementById('reviewList').innerHTML = reviewHtml;
+}
+
+document.getElementById('restartBtn').addEventListener('click', () => {
+  current = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+  locked = new Array(QUESTIONS.length).fill(false);
+  resultsScreen.style.display = 'none';
+  nameScreen.style.display = 'block';
+  nameInput.value = '';
+});
+</script>
+</body>
+</html>
